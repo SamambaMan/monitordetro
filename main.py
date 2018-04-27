@@ -8,9 +8,10 @@ from multiprocessing.dummy import Pool
 
 DETRO = 'http://www.detro.rj.gov.br/regulares-tarifas-itinerario/include/linhas.php?parametro=%s'
 LINES_PAGE = 'http://www.detro.rj.gov.br/regulares-tarifas-itinerario/'
-INSTANCIAS = 40
+PARALLEL_RUNS = 40
 FILEFORMAT = 'assets/%s.txt'
 PARALLEL = False
+CHANGES = 'changes.txt'
 
 
 def download_contents(param_id):
@@ -28,7 +29,7 @@ def dumpfile(key, content):
 
 
 def logchanges(text, message):
-    with open('changes.txt', 'a') as changes:
+    with open(CHANGES, 'a') as changes:
         changes.write(('%s - ' + message) % (datetime.datetime.now(), text))
 
 
@@ -64,9 +65,12 @@ def check_has_file(key):
 
 
 if __name__ == '__main__':
-    pool = Pool(INSTANCIAS)
+    pool = Pool(PARALLEL_RUNS)
     lines = get_line_codes()
     lines = [(x, lines[x]) for x in lines]
+
+    logchanges('', '---------------------------%s\n')
+    logchanges('', 'Running...%s\n')
 
     if PARALLEL:
         pool.map(process, lines)
@@ -74,3 +78,4 @@ if __name__ == '__main__':
         for line in lines:
             process(line)
 
+    logchanges('', 'OK%s\n')
